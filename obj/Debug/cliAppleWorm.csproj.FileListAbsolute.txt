@@ -1,0 +1,7 @@
+X:\Languages\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWorm.exe.config
+X:\Languages\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWorm.exe
+X:\Languages\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWorm.pdb
+X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.csprojAssemblyReference.cache
+X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.csproj.CoreCompileInputs.cache
+X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.exe
+X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.pdb
