@@ -7,17 +7,70 @@ using System.Threading;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
+
 namespace cliAppleWorm
 {
     class Program
     {
-
-       
         static void Main(string[] args)
         {
+            string levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\21.ini";
+
+            if(args.Length != 0)
+            {
+                levelFilePath = args[0];
+                if (!File.Exists(levelFilePath))
+                    return;
+            }
+
+            string[] data = GetLevelData(levelFilePath);
+
+            if (data.Length < 5)
+                return;
+
+            Point newHeadPos;
+            Point wormHead;
+            Point end = Helpers.StringToPoint(data[2]);
+
+            List<Point> worm =      new List<Point> { };
+            List<Point> applePos =  new List<Point> { };
+            List<Point> map =       new List<Point> { };
+            List<Point> spikes =    new List<Point> { };
+
+            // get all worm positions
+            foreach(string p in data[0].Split('|'))
+            {
+                if (string.IsNullOrEmpty(p)) break;
+                worm.Add(Helpers.StringToPoint(p));
+            }
+            wormHead = worm.Last();
+
+            // get all apple locations
+            foreach (string p in data[1].Split('|'))
+            {
+                if (string.IsNullOrEmpty(p)) break;
+                applePos.Add(Helpers.StringToPoint(p));
+            }
+
+            // get all spike positions
+            foreach (string p in data[3].Split('|'))
+            {
+                spikes.Add(Helpers.StringToPoint(p));
+            }
+
+            // get all block positions
+            foreach (string p in data[4].Split('|'))
+            {
+                if (string.IsNullOrEmpty(p)) break;
+                map.Add(Helpers.StringToPoint(p));
+            }
+
+            Size mapSize = new Size(25, 10);
+
             Console.OutputEncoding = Encoding.UTF8;
-            Console.SetWindowSize(101, 26);
-            Console.SetBufferSize(101, 26);
+            Console.SetWindowSize(mapSize.Width * 2 + 1, mapSize.Height + 1);
+            Console.SetBufferSize(mapSize.Width * 2 + 1, mapSize.Height + 1);
 
             IntPtr handle = NativeMethods.GetConsoleWindow();
             IntPtr sysMenu = NativeMethods.GetSystemMenu(handle, false);
@@ -28,34 +81,12 @@ namespace cliAppleWorm
                 NativeMethods.DeleteMenu(sysMenu, NativeConstants.SC_SIZE, NativeConstants.MF_BYCOMMAND);
             }
 
-            Size mapSize = new Size(50, 25);
 
-            Point newHeadPos;
-            Point wormHead = new Point(6, 10);
-            Point applePos = GetApplePosition(mapSize.Width - 1, mapSize.Height - 1);
-
-            List<Point> worm = new List<Point> { new Point(4,10), new Point(5, 10), new Point(6, 10) };
-            List<Point> map = new List<Point> { };
-
-            for(int i = 0; i < mapSize.Width; i++)
-            {
-                map.Add(new Point(i, mapSize.Height-1));
-            }
-            for (int i = 0; i < mapSize.Width; i++)
-            {
-                map.Add(new Point(i, 0));
-            }
-            for (int i = 0; i < mapSize.Height; i++)
-            {
-                map.Add(new Point(0,i));
-            }
-            for (int i = 0; i < mapSize.Height; i++)
-            {
-                map.Add(new Point(mapSize.Width - 1, i));
-            }
-
-            bool skipInput = true;
             bool wormMoved = false;
+            bool isDead = false;
+            int fallTilDeath = 10; // if the worm falls for 10 loops it dies
+            int fallLoopCount = 0;
+
 
             Stopwatch moveLimitStopwatch = new Stopwatch();
             moveLimitStopwatch.Start();
@@ -63,20 +94,54 @@ namespace cliAppleWorm
             {
                 Console.SetCursorPosition(0, 0);
 
-                wormMoved = false;
+                while (IsFalling(worm, Helpers.CombineList(map, applePos)))
+                {
+                    for (int i = 0; i < worm.Count; i++)
+                    {
+                        worm[i] = new Point(worm[i].X, worm[i].Y + 1);
+                    }
+
+                    wormHead.Y++;
+                    fallLoopCount++;
+
+                    if (fallLoopCount >= fallTilDeath)
+                    {
+                        isDead = true;
+                        break;
+                    }
+                }
+
+                if (InSpikes(worm, spikes))
+                {
+                    isDead = true;
+                }
+
+                fallLoopCount = 0;
 
                 for (int y = 0; y < mapSize.Height; y++)
                 {
-                    
                     for (int x = 0; x < mapSize.Width; x++)
                     {
                         if(map.Contains(new Point(x, y)))
                         {
-                            Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkGray);
+                            //Helpers.WriteAsConsoleColor("[]", ConsoleColor.DarkYellow);
+                            Console.Write("[]");
                             continue;
                         }
 
-                        if(applePos.X == x && applePos.Y == y)
+                        if(spikes.Contains(new Point(x, y)))
+                        {
+                            Console.Write("WW");
+                            continue;
+                        }
+
+                        if(end.X == x && end.Y == y)
+                        {
+                            Helpers.WriteAsConsoleColor("  ", ConsoleColor.White);
+                            continue;
+                        }
+
+                        if(applePos.Contains(new Point(x, y)))
                         {
                             Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkRed);
                             continue;
@@ -97,6 +162,8 @@ namespace cliAppleWorm
                     }
                     Console.Write("\n");
                 }
+
+                if (isDead) break;
 
                 ConsoleKeyInfo k = Console.ReadKey(intercept: true);
                 if (moveLimitStopwatch.ElapsedMilliseconds > 25)
@@ -141,22 +208,68 @@ namespace cliAppleWorm
 
                 if (wormMoved)
                 {
+                    wormMoved = false;
+
                     worm.Add(wormHead);
-                    if (wormHead != applePos)
+
+                    if (!applePos.Contains(wormHead))
                     {
                         worm.RemoveAt(0);
                     }
                     else
                     {
-                        applePos = GetApplePosition(mapSize.Width - 1, mapSize.Height - 1);
+                        applePos.Remove(wormHead);
                     }
                 }
 
                 Helpers.ClearConsoleInputBuffer();
             }
+
+            Console.WriteLine("you died");
+            Console.ReadLine();
         }
 
+        private static bool InSpikes(List<Point> worm, List<Point> spikes)
+        {
+            foreach(Point p in worm)
+                if (spikes.Contains(p))
+                    return true;
 
+            return false;
+        }
+
+        private static bool IsFalling(List<Point> worm, List<Point> colision)
+        {
+            int bodyToGroundCount = 0;
+            foreach (Point p in worm)
+                if (!colision.Contains(new Point(p.X, p.Y + 1)))
+                    bodyToGroundCount++;
+
+            if(bodyToGroundCount == worm.Count)
+                return true;
+            
+            return false;
+        }
+
+        private static string[] GetLevelData(string path)
+        {
+            if (!File.Exists(path)) return null;
+
+            List<string> lines = new List<string> { };
+
+            using (var fileStream = File.OpenRead(path))
+            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 128))
+            {
+                String line;
+
+                while ((line = streamReader.ReadLine()) != null)
+                {
+                    lines.Add(line.Substring(0, line.IndexOf(';') != -1 ? line.IndexOf(';') : line.Length).Trim()); 
+                }
+            }
+
+            return lines.ToArray();
+        }
 
         private static Point GetApplePosition(int width, int height)
         {
