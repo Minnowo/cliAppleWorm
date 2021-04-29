@@ -15,7 +15,9 @@ namespace cliAppleWorm
     {
         static void Main(string[] args)
         {
-            string levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\21.ini";
+            Start:
+            Console.Write("input level number");
+            string levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\" + Console.ReadLine() +".ini";
 
             if(args.Length != 0)
             {
@@ -23,7 +25,7 @@ namespace cliAppleWorm
                 if (!File.Exists(levelFilePath))
                     return;
             }
-
+            Restart:
             string[] data = GetLevelData(levelFilePath);
 
             if (data.Length < 5)
@@ -56,6 +58,7 @@ namespace cliAppleWorm
             // get all spike positions
             foreach (string p in data[3].Split('|'))
             {
+                if (string.IsNullOrEmpty(p)) break;
                 spikes.Add(Helpers.StringToPoint(p));
             }
 
@@ -66,7 +69,7 @@ namespace cliAppleWorm
                 map.Add(Helpers.StringToPoint(p));
             }
 
-            Size mapSize = new Size(25, 10);
+            Size mapSize = new Size(25, 25);
 
             Console.OutputEncoding = Encoding.UTF8;
             Console.SetWindowSize(mapSize.Width * 2 + 1, mapSize.Height + 1);
@@ -84,7 +87,7 @@ namespace cliAppleWorm
 
             bool wormMoved = false;
             bool isDead = false;
-            int fallTilDeath = 10; // if the worm falls for 10 loops it dies
+            int fallTilDeath = mapSize.Height; // if the worm falls for 10 loops it dies
             int fallLoopCount = 0;
 
 
@@ -94,7 +97,12 @@ namespace cliAppleWorm
             {
                 Console.SetCursorPosition(0, 0);
 
-                while (IsFalling(worm, Helpers.CombineList(map, applePos)))
+
+                List<Point> colPoints = Helpers.CombineList(map, applePos);
+                colPoints.Add(end);
+
+                fallLoopCount = 0;
+                while (IsFalling(worm, colPoints))
                 {
                     for (int i = 0; i < worm.Count; i++)
                     {
@@ -115,8 +123,6 @@ namespace cliAppleWorm
                 {
                     isDead = true;
                 }
-
-                fallLoopCount = 0;
 
                 for (int y = 0; y < mapSize.Height; y++)
                 {
@@ -202,6 +208,8 @@ namespace cliAppleWorm
                             wormHead.Y--;
                             wormMoved = true;
                             break;
+                        case ConsoleKey.R:
+                            goto Restart;
                     }
                     moveLimitStopwatch.Restart();
                 }
@@ -209,7 +217,6 @@ namespace cliAppleWorm
                 if (wormMoved)
                 {
                     wormMoved = false;
-
                     worm.Add(wormHead);
 
                     if (!applePos.Contains(wormHead))
@@ -221,12 +228,32 @@ namespace cliAppleWorm
                         applePos.Remove(wormHead);
                     }
                 }
+                if (wormHead == end)
+                {
+                    // put green over the purple head to make it look like
+                    // its head went into the white end point
+                    Console.SetCursorPosition(worm[worm.Count-2].X*2, worm[worm.Count-2].Y);
+                    Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkGreen);
+
+                    // go through and replace the green with nothing
+                    // to make it look like its entering 
+                    for (int i = 0; i < worm.Count-1; i ++)
+                    {
+                        Console.SetCursorPosition(worm[i].X*2, worm[i].Y);
+                        Console.WriteLine("  ");
+                        Thread.Sleep(100);
+                    }
+                    Console.SetCursorPosition(0, mapSize.Height-2);
+                    Console.WriteLine("level complete");
+                    goto Start;
+                }
 
                 Helpers.ClearConsoleInputBuffer();
             }
 
             Console.WriteLine("you died");
-            Console.ReadLine();
+            Console.ReadKey();
+            goto Restart;
         }
 
         private static bool InSpikes(List<Point> worm, List<Point> spikes)
@@ -240,15 +267,13 @@ namespace cliAppleWorm
 
         private static bool IsFalling(List<Point> worm, List<Point> colision)
         {
-            int bodyToGroundCount = 0;
             foreach (Point p in worm)
-                if (!colision.Contains(new Point(p.X, p.Y + 1)))
-                    bodyToGroundCount++;
+                // if any part of the worm is touching the ground
+                // we know its not falling
+                if (colision.Contains(new Point(p.X, p.Y + 1)))
+                    return false;
 
-            if(bodyToGroundCount == worm.Count)
-                return true;
-            
-            return false;
+            return true;
         }
 
         private static string[] GetLevelData(string path)
@@ -269,12 +294,6 @@ namespace cliAppleWorm
             }
 
             return lines.ToArray();
-        }
-
-        private static Point GetApplePosition(int width, int height)
-        {
-            Random r = new Random();
-            return new Point(r.Next(1, width), r.Next(1, height));
         }
     }
 }
