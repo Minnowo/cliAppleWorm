@@ -13,8 +13,10 @@ namespace cliAppleWorm
 
         public static List<T> CombineList<T>(List<T> a, List<T> b)
         {
-            b.AddRange(a);
-            return b;
+            List<T> r = new List<T> { };
+            r.AddRange(a);
+            r.AddRange(b);
+            return r;
         }
 
         public static void WriteAsConsoleColor(string output, ConsoleColor col)

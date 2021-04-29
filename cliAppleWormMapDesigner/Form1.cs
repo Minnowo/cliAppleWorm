@@ -116,7 +116,8 @@ namespace cliAppleWormMapDesigner
 
         private void button6_Click(object sender, EventArgs e)
         {
-            string[] outPutFile = new string[] { "", "", "", "", ""};
+            string[] outPutFile = new string[] { "", "", "", "", "", ""};
+            string wormHead = "";
             foreach(ColorCheckBox cb in panel1.Controls.OfType<ColorCheckBox>())
             {
                 switch (cb.it)
@@ -129,10 +130,11 @@ namespace cliAppleWormMapDesigner
                         break;
 
                     case itemType.wormhead:
-                        outPutFile[0] += $"{cb.Location.X / 13} {cb.Location.Y / 13}|";
+                        wormHead += $"{cb.Location.X / 13} {cb.Location.Y / 13}|";
                         break;
 
                     case itemType.rock:
+                        outPutFile[5] += $"{cb.Location.X / 13} {cb.Location.Y / 13}|";
                         break;
 
                     case itemType.apple:
@@ -153,6 +155,7 @@ namespace cliAppleWormMapDesigner
                 }
             }
 
+            outPutFile[0] += wormHead;
             for(int i = 0; i<outPutFile.Length; i++)
             {
                 if (string.IsNullOrEmpty(outPutFile[i]))
@@ -160,6 +163,7 @@ namespace cliAppleWormMapDesigner
                     Console.WriteLine("");
                     continue;
                 }
+
                 outPutFile[i] = outPutFile[i].Substring(0, outPutFile[i].Length - 1);
                 Console.WriteLine(outPutFile[i]);
             }
