@@ -259,6 +259,8 @@ namespace cliAppleWorm
                         break;
                     case ConsoleKey.R:
                         goto Restart;
+                    case ConsoleKey.Escape:
+                        goto Start;
                 }
 
                 if (rocks.Contains(wormHead))

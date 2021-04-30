@@ -291,7 +291,7 @@ namespace cliAppleWormMapDesigner
                         if (rocks.Contains(p))
                         {
                             cb.backCol = Color.Gray;
-                            cb.it = itemType.map;
+                            cb.it = itemType.rock;
                             cb.Invalidate();
                             continue;
                         }
@@ -299,7 +299,7 @@ namespace cliAppleWormMapDesigner
                         if (spikes.Contains(p))
                         {
                             cb.backCol = Color.FromArgb(28, 32, 4);
-                            cb.it = itemType.map;
+                            cb.it = itemType.spike;
                             cb.Invalidate();
                             continue;
                         }
@@ -307,7 +307,7 @@ namespace cliAppleWormMapDesigner
                         if (end.X == p.X && end.Y == p.Y)
                         {
                             cb.backCol = Color.Blue;
-                            cb.it = itemType.map;
+                            cb.it = itemType.endpoint;
                             cb.Invalidate();
                             continue;
                         }
@@ -315,7 +315,7 @@ namespace cliAppleWormMapDesigner
                         if (apples.Contains(p))
                         {
                             cb.backCol = Color.FromArgb(153, 0, 0);
-                            cb.it = itemType.map;
+                            cb.it = itemType.apple;
                             cb.Invalidate();
                             continue;
                         }
@@ -325,12 +325,12 @@ namespace cliAppleWormMapDesigner
                             if (wormHead.X == p.X && wormHead.Y == p.Y)
                             {
                                 cb.backCol = Color.FromArgb(151, 0, 178);
-                                cb.it = itemType.map;
+                                cb.it = itemType.wormhead;
                                 cb.Invalidate();
                                 continue;
                             }
                             cb.backCol = Color.FromArgb(0, 111, 0);
-                            cb.it = itemType.map;
+                            cb.it = itemType.worm;
                             cb.Invalidate();
                             continue;
                         }
