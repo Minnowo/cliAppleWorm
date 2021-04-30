@@ -106,9 +106,6 @@ namespace cliAppleWorm
             int fallTilDeath = mapSize.Height; // if the worm falls for 10 loops it dies
             int fallLoopCount = 0;
 
-
-            Stopwatch moveLimitStopwatch = new Stopwatch();
-            moveLimitStopwatch.Start();
             while (true)
             {
                 Console.SetCursorPosition(0, 0);
@@ -138,8 +135,9 @@ namespace cliAppleWorm
                     }
                 }
 
+                colPoints.AddRange(worm);
                 fallLoopCount = 0;
-                int[] fallingRocks = GetFallingRocksIndex(rocks, Helpers.CombineList(colPoints, worm));
+                int[] fallingRocks = GetFallingRocksIndex(rocks, colPoints);
                 while(fallingRocks.Length != 0)
                 {
                     foreach (int i in fallingRocks)
@@ -157,7 +155,7 @@ namespace cliAppleWorm
                         }
                         break;
                     }
-                    fallingRocks = GetFallingRocksIndex(rocks, Helpers.CombineList(colPoints, worm));
+                    fallingRocks = GetFallingRocksIndex(rocks, Helpers.CombineList(colPoints, rocks));
                 }
 
                 
@@ -220,103 +218,96 @@ namespace cliAppleWorm
                 if (isDead) break;
 
                 ConsoleKeyInfo k = Console.ReadKey(intercept: true);
-                if (moveLimitStopwatch.ElapsedMilliseconds > 25)
+
+                switch (k.Key)
                 {
-                    switch (k.Key)
-                    {
-                        case ConsoleKey.RightArrow:
-                            newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
-                                break;
-
-                            wormHead.X++;
-                            wormMoved = true;
-                            dir = wormMoveDirection.right;
+                    case ConsoleKey.RightArrow:
+                        newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
+                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
                             break;
-                        case ConsoleKey.LeftArrow:
-                            newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
-                                break;
 
-                            wormHead.X--;
-                            wormMoved = true;
-                            dir = wormMoveDirection.left;
+                        wormHead.X++;
+                        wormMoved = true;
+                        dir = wormMoveDirection.right;
+                        break;
+                    case ConsoleKey.LeftArrow:
+                        newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
+                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
                             break;
-                        case ConsoleKey.DownArrow:
-                            newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
-                            //if(rocks.Contains(newHeadPos))
-                            //    newHeadPos = new Point(newHeadPos.X, newHeadPos.Y + 1);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
-                                break;
 
-                            wormHead.Y++;
-                            wormMoved = true;
-                            dir = wormMoveDirection.down;
+                        wormHead.X--;
+                        wormMoved = true;
+                        dir = wormMoveDirection.left;
+                        break;
+                    case ConsoleKey.DownArrow:
+                        newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
+                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
                             break;
-                        case ConsoleKey.UpArrow:
-                            newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
-                                break;
 
-                            wormHead.Y--;
-                            wormMoved = true;
-                            dir = wormMoveDirection.up;
+                        wormHead.Y++;
+                        wormMoved = true;
+                        dir = wormMoveDirection.down;
+                        break;
+                    case ConsoleKey.UpArrow:
+                        newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
+                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
                             break;
-                        case ConsoleKey.R:
-                            goto Restart;
-                    }
 
-                    if (rocks.Contains(wormHead))
-                    {
-                        int index = rocks.IndexOf(wormHead);
-                        switch (dir)
-                        {
-                            case wormMoveDirection.up:
-                                newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
-                                if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
-                                {
-                                    wormHead.Y++;
-                                    wormMoved = false;
-                                    break;
-                                }
-                                rocks[index] = new Point(rocks[index].X, rocks[index].Y - 1);
-                                break;
-                            case wormMoveDirection.down:
-                                newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
-                                if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
-                                {
-                                    wormHead.Y--;
-                                    wormMoved = false;
-                                    break;
-                                }
-                                rocks[index] = new Point(rocks[index].X, rocks[index].Y + 1);
-                                break;
-                            case wormMoveDirection.left:
-                                newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
-                                if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
-                                {
-                                    wormHead.X++;
-                                    wormMoved = false;
-                                    break;
-                                }
-                                rocks[index] = new Point(rocks[index].X - 1, rocks[index].Y);
-                                break;
-                            case wormMoveDirection.right:
-                                newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
-                                if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
-                                {
-                                    wormHead.X--;
-                                    wormMoved = false;
-                                    break;
-                                }
-                                rocks[index] = new Point(rocks[index].X + 1, rocks[index].Y);
-                                break;
-                        }
-                    }
-
-                    moveLimitStopwatch.Restart();
+                        wormHead.Y--;
+                        wormMoved = true;
+                        dir = wormMoveDirection.up;
+                        break;
+                    case ConsoleKey.R:
+                        goto Restart;
                 }
 
+                if (rocks.Contains(wormHead))
+                {
+                    int index = rocks.IndexOf(wormHead);
+                    switch (dir)
+                    {
+                        case wormMoveDirection.up:
+                            newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            {
+                                wormHead.Y++;
+                                wormMoved = false;
+                                break;
+                            }
+                            rocks[index] = new Point(rocks[index].X, rocks[index].Y - 1);
+                            break;
+                        case wormMoveDirection.down:
+                            newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            {
+                                wormHead.Y--;
+                                wormMoved = false;
+                                break;
+                            }
+                            rocks[index] = new Point(rocks[index].X, rocks[index].Y + 1);
+                            break;
+                        case wormMoveDirection.left:
+                            newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            {
+                                wormHead.X++;
+                                wormMoved = false;
+                                break;
+                            }
+                            rocks[index] = new Point(rocks[index].X - 1, rocks[index].Y);
+                            break;
+                        case wormMoveDirection.right:
+                            newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            {
+                                wormHead.X--;
+                                wormMoved = false;
+                                break;
+                            }
+                            rocks[index] = new Point(rocks[index].X + 1, rocks[index].Y);
+                            break;
+                    }
+                }
                 
 
                 if (wormMoved)
@@ -373,10 +364,18 @@ namespace cliAppleWorm
         private static int[] GetFallingRocksIndex(List<Point> rocks, List<Point> colision)
         {
             List<int> fallingRocks = new List<int> { };
-            for (int i = 0; i <= rocks.Count-1;i++)
+            for (int i = 0; i <= rocks.Count - 1; i++) 
+            {
                 if (!colision.Contains(new Point(rocks[i].X, rocks[i].Y + 1)))
+                {
                     fallingRocks.Add(i);
-
+                    colision.Remove(rocks[i]);
+                }
+                if(!colision.Contains(new Point(rocks[i].X, rocks[i].Y - 1)))
+                {
+                    colision.Remove(rocks[i]);
+                }
+            }
             return fallingRocks.ToArray();
         }
 
