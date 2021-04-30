@@ -22,9 +22,17 @@ namespace cliAppleWorm
         }
         static void Main(string[] args)
         {
-            Start:
-            Console.Write("input level name");
-            string levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\" + Console.ReadLine() + ".awlf";
+        Start:
+            
+
+            string levelFilePath = "";
+            while (true)
+            {
+                Console.WriteLine("\ninput level name");
+                levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\" + Console.ReadLine() + ".awlf";
+                if (File.Exists(levelFilePath))
+                    break;
+            }
 
             if(args.Length != 0)
             {
@@ -270,7 +278,7 @@ namespace cliAppleWorm
                     {
                         case wormMoveDirection.up:
                             newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
                             {
                                 wormHead.Y++;
                                 wormMoved = false;
@@ -280,7 +288,7 @@ namespace cliAppleWorm
                             break;
                         case wormMoveDirection.down:
                             newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
                             {
                                 wormHead.Y--;
                                 wormMoved = false;
@@ -290,7 +298,7 @@ namespace cliAppleWorm
                             break;
                         case wormMoveDirection.left:
                             newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
                             {
                                 wormHead.X++;
                                 wormMoved = false;
@@ -300,7 +308,7 @@ namespace cliAppleWorm
                             break;
                         case wormMoveDirection.right:
                             newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos))
+                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
                             {
                                 wormHead.X--;
                                 wormMoved = false;
