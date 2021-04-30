@@ -23,8 +23,8 @@ namespace cliAppleWorm
         static void Main(string[] args)
         {
             Start:
-            Console.Write("input level number");
-            string levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\" + Console.ReadLine() +".ini";
+            Console.Write("input level name");
+            string levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\" + Console.ReadLine() + ".awlf";
 
             if(args.Length != 0)
             {
@@ -39,7 +39,7 @@ namespace cliAppleWorm
                 return;
 
             Point newHeadPos;
-            Point wormHead;
+            Point wormHead = Point.Empty;
             Point end = Helpers.StringToPoint(data[2]);
 
             List<Point> worm =      new List<Point> { };
@@ -54,7 +54,8 @@ namespace cliAppleWorm
                 if (string.IsNullOrEmpty(p)) break;
                 worm.Add(Helpers.StringToPoint(p));
             }
-            wormHead = worm.Last();
+            if(worm.Count != 0)
+                wormHead = worm.Last();
 
             // get all apple locations
             foreach (string p in data[1].Split('|'))
@@ -179,13 +180,13 @@ namespace cliAppleWorm
 
                         if(rocks.Contains(new Point(x, y)))
                         {
-                            Helpers.WriteAsConsoleColor("  ", ConsoleColor.Gray);
+                            Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkGray);
                             continue;
                         }
 
                         if(spikes.Contains(new Point(x, y)))
                         {
-                            Console.Write("WW");
+                            Console.Write("XX");
                             continue;
                         }
 
@@ -334,9 +335,13 @@ namespace cliAppleWorm
                         // to make it look like its entering 
                         for (int i = 0; i < worm.Count - 1; i++)
                         {
-                            Console.SetCursorPosition(worm[i].X * 2, worm[i].Y);
-                            Console.WriteLine("  ");
-                            Thread.Sleep(1000 / worm.Count);
+                            try
+                            {
+                                Console.SetCursorPosition(worm[i].X * 2, worm[i].Y);
+                                Console.WriteLine("  ");
+                                Thread.Sleep(1000 / worm.Count);
+                            }
+                            catch { }
                         }
                         Console.SetCursorPosition(0, mapSize.Height - 2);
                         Console.WriteLine("level complete");

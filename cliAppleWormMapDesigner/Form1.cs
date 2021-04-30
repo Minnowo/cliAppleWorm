@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -160,14 +161,212 @@ namespace cliAppleWormMapDesigner
             {
                 if (string.IsNullOrEmpty(outPutFile[i]))
                 {
-                    Console.WriteLine("");
+                    Console.WriteLine(";");
+                    outPutFile[i] = ";";
                     continue;
                 }
 
                 outPutFile[i] = outPutFile[i].Substring(0, outPutFile[i].Length - 1);
+                outPutFile[i] += ";";
                 Console.WriteLine(outPutFile[i]);
             }
             textBox1.Text = string.Join("\n", outPutFile);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            foreach (ColorCheckBox cb in panel1.Controls.OfType<ColorCheckBox>())
+            {
+                cb.backCol = Color.White;
+                cb.it = itemType.none;
+                cb.Invalidate();
+            }
+            }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog1 = new SaveFileDialog())
+            {
+                saveFileDialog1.Filter = "apple worm level file (*.awlf)|*.awlf";
+
+                saveFileDialog1.FileName = "0000.awlf";
+                saveFileDialog1.Title = "Save An Apple Worm Level File";
+                //saveFileDialog1.ShowDialog();
+
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    button6_Click(null, e);
+                    try
+                    {
+                        System.IO.File.WriteAllText(saveFileDialog1.FileName, textBox1.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"error saving {ex}");
+                        MessageBox.Show(ex.ToString());
+                    }
+                }
+            }
+            GC.Collect();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using(OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "apple worm level file (*.awlf)|*.awlf";
+                ofd.Title = "Open An Apple Worm Level File";
+                ofd.Multiselect = false;
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    string fileName = ofd.FileName;
+
+                    string[] data = GetLevelData(fileName);
+
+                    if (data.Length < 6)
+                        return;
+
+                    Point newHeadPos;
+                    Point wormHead = Point.Empty;
+                    Point end = StringToPoint(data[2]);
+
+                    List<Point> worm = new List<Point> { };
+                    List<Point> apples = new List<Point> { };
+                    List<Point> map = new List<Point> { };
+                    List<Point> spikes = new List<Point> { };
+                    List<Point> rocks = new List<Point> { };
+
+                    // get all worm positions
+                    foreach (string p in data[0].Split('|'))
+                    {
+                        if (string.IsNullOrEmpty(p)) break;
+                        worm.Add(StringToPoint(p));
+                    }
+                    if (worm.Count != 0)
+                        wormHead = worm.Last();
+
+                    // get all apple locations
+                    foreach (string p in data[1].Split('|'))
+                    {
+                        if (string.IsNullOrEmpty(p)) break;
+                        apples.Add(StringToPoint(p));
+                    }
+
+                    // get all spike positions
+                    foreach (string p in data[3].Split('|'))
+                    {
+                        if (string.IsNullOrEmpty(p)) break;
+                        spikes.Add(StringToPoint(p));
+                    }
+
+                    // get all block positions
+                    foreach (string p in data[4].Split('|'))
+                    {
+                        if (string.IsNullOrEmpty(p)) break;
+                        map.Add(StringToPoint(p));
+                    }
+
+                    // get all block positions
+                    foreach (string p in data[5].Split('|'))
+                    {
+                        if (string.IsNullOrEmpty(p)) break;
+                        rocks.Add(StringToPoint(p));
+                    }
+
+                    //button1_Click(null, e);
+
+                    foreach (ColorCheckBox cb in panel1.Controls.OfType<ColorCheckBox>())
+                    {
+                        Point p = new Point(cb.Location.X / 13, cb.Location.Y / 13);
+
+                        if (map.Contains(p))
+                        {
+                            cb.backCol = Color.FromArgb(74, 41, 21);
+                            cb.it = itemType.map;
+                            cb.Invalidate();
+                            continue;
+                        }
+
+                        if (rocks.Contains(p))
+                        {
+                            cb.backCol = Color.Gray;
+                            cb.it = itemType.map;
+                            cb.Invalidate();
+                            continue;
+                        }
+
+                        if (spikes.Contains(p))
+                        {
+                            cb.backCol = Color.FromArgb(28, 32, 4);
+                            cb.it = itemType.map;
+                            cb.Invalidate();
+                            continue;
+                        }
+
+                        if (end.X == p.X && end.Y == p.Y)
+                        {
+                            cb.backCol = Color.Blue;
+                            cb.it = itemType.map;
+                            cb.Invalidate();
+                            continue;
+                        }
+
+                        if (apples.Contains(p))
+                        {
+                            cb.backCol = Color.FromArgb(153, 0, 0);
+                            cb.it = itemType.map;
+                            cb.Invalidate();
+                            continue;
+                        }
+
+                        if (worm.Contains(p))
+                        {
+                            if (wormHead.X == p.X && wormHead.Y == p.Y)
+                            {
+                                cb.backCol = Color.FromArgb(151, 0, 178);
+                                cb.it = itemType.map;
+                                cb.Invalidate();
+                                continue;
+                            }
+                            cb.backCol = Color.FromArgb(0, 111, 0);
+                            cb.it = itemType.map;
+                            cb.Invalidate();
+                            continue;
+                        }
+
+                        cb.backCol = Color.White;
+                        cb.it = itemType.none;
+                        cb.Invalidate();
+                    }
+                }
+            }
+        }
+        public static Point StringToPoint(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return Point.Empty;
+
+            string[] p = s.Split(' ');
+            return new Point(int.Parse(p[0]), int.Parse(p[1]));
+        }
+        private static string[] GetLevelData(string path)
+        {
+            if (!File.Exists(path)) return null;
+
+            List<string> lines = new List<string> { };
+
+            using (var fileStream = File.OpenRead(path))
+            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 128))
+            {
+                String line;
+
+                while ((line = streamReader.ReadLine()) != null)
+                {
+                    lines.Add(line.Substring(0, line.IndexOf(';') != -1 ? line.IndexOf(';') : line.Length).Trim());
+                }
+            }
+
+            return lines.ToArray();
         }
     }
 }

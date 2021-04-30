@@ -46,6 +46,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel1
@@ -58,12 +60,13 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(269, 12);
+            this.button1.Location = new System.Drawing.Point(717, 8);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(71, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "clear map";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button6
             // 
@@ -71,7 +74,7 @@
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(75, 23);
             this.button6.TabIndex = 6;
-            this.button6.Text = "save to file";
+            this.button6.Text = "Get Output";
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
@@ -154,10 +157,10 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(458, 15);
+            this.textBox1.Location = new System.Drawing.Point(458, 37);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(330, 244);
+            this.textBox1.Size = new System.Drawing.Size(330, 222);
             this.textBox1.TabIndex = 14;
             // 
             // label1
@@ -230,11 +233,33 @@
             this.label7.TabIndex = 21;
             this.label7.Text = "     ";
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(265, 12);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 22;
+            this.button2.Text = "Save To File";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(427, 12);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 23;
+            this.button3.Text = "Load Level";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 280);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -281,6 +306,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
     }
 }
 
