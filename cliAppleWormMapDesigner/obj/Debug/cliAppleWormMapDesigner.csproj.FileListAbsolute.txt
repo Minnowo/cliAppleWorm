@@ -8,3 +8,13 @@ X:\Languages\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppl
 X:\Languages\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.exe
 X:\Languages\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.pdb
 X:\Languages\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.csprojAssemblyReference.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWormMapDesigner.exe.config
+D:\Programming\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWormMapDesigner.exe
+D:\Programming\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWormMapDesigner.pdb
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.csproj.AssemblyReference.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.Form1.resources
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.Properties.Resources.resources
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.csproj.GenerateResource.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.csproj.CoreCompileInputs.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.exe
+D:\Programming\C#\TEST_DATA\cliAppleWorm\cliAppleWormMapDesigner\obj\Debug\cliAppleWormMapDesigner.pdb

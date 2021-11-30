@@ -4,5 +4,4 @@
 4 3		; spike data
 1 4|2 4|3 4|4 4|5 4|6 4|7 4|8 4 	; level block data
  ;rockdata
-height = 4
-width = 9
+4 9

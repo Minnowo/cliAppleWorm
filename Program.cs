@@ -20,197 +20,83 @@ namespace cliAppleWorm
             left,
             right
         }
-        static void Main(string[] args)
+
+        public enum LevelCompletionResult
         {
-        Start:
-            
+            win,
+            lose,
+            restart,
+            cancel
+        }
 
-            string levelFilePath = "";
-            while (true)
-            {
-                Console.WriteLine("\ninput level name");
-                levelFilePath = Directory.GetCurrentDirectory() + "\\levels\\" + Console.ReadLine() + ".awlf";
-                if (File.Exists(levelFilePath))
-                    break;
-            }
 
-            if(args.Length != 0)
-            {
-                levelFilePath = args[0];
-                if (!File.Exists(levelFilePath))
-                    return;
-            }
-            Restart:
-            string[] data = GetLevelData(levelFilePath);
+        public static LevelCompletionResult PlayLevel(AppleWormLevel l)
+        {
+            if (!l.IsValidLevel)
+                return LevelCompletionResult.cancel;
 
-            if (data.Length < 6)
-                return;
+            //level.SetConsoleBuffers();
 
-            Point newHeadPos;
-            Point wormHead = Point.Empty;
-            Point end = Helpers.StringToPoint(data[2]);
+            AppleWormLevel level = l.Clone();
 
-            List<Point> worm =      new List<Point> { };
-            List<Point> apples =    new List<Point> { };
-            List<Point> map =       new List<Point> { };
-            List<Point> spikes =    new List<Point> { };
-            List<Point> rocks =     new List<Point> { };
-
-            // get all worm positions
-            foreach(string p in data[0].Split('|'))
-            {
-                if (string.IsNullOrEmpty(p)) break;
-                worm.Add(Helpers.StringToPoint(p));
-            }
-            if(worm.Count != 0)
-                wormHead = worm.Last();
-
-            // get all apple locations
-            foreach (string p in data[1].Split('|'))
-            {
-                if (string.IsNullOrEmpty(p)) break;
-                apples.Add(Helpers.StringToPoint(p));
-            }
-
-            // get all spike positions
-            foreach (string p in data[3].Split('|'))
-            {
-                if (string.IsNullOrEmpty(p)) break;
-                spikes.Add(Helpers.StringToPoint(p));
-            }
-
-            // get all block positions
-            foreach (string p in data[4].Split('|'))
-            {
-                if (string.IsNullOrEmpty(p)) break;
-                map.Add(Helpers.StringToPoint(p));
-            }
-
-            // get all block positions
-            foreach (string p in data[5].Split('|'))
-            {
-                if (string.IsNullOrEmpty(p)) break;
-                rocks.Add(Helpers.StringToPoint(p));
-            }
-            
-            Size mapSize = new Size(25, 25);
-
-            Console.OutputEncoding = Encoding.UTF8;
-            Console.SetWindowSize(mapSize.Width * 2 + 1, mapSize.Height + 1);
-            Console.SetBufferSize(mapSize.Width * 2 + 1, mapSize.Height + 1);
-
-            IntPtr handle = NativeMethods.GetConsoleWindow();
-            IntPtr sysMenu = NativeMethods.GetSystemMenu(handle, false);
-
-            if (handle != IntPtr.Zero)
-            {
-                NativeMethods.DeleteMenu(sysMenu, NativeConstants.SC_MINIMIZE, NativeConstants.MF_BYCOMMAND);
-                NativeMethods.DeleteMenu(sysMenu, NativeConstants.SC_SIZE, NativeConstants.MF_BYCOMMAND);
-            }
-
-            wormMoveDirection dir = wormMoveDirection.down;
+            Point newHeadPos = new Point();
             bool wormMoved = false;
             bool isDead = false;
-            int fallTilDeath = mapSize.Height; // if the worm falls for 10 loops it dies
+            int fallTilDeath = level.Height; // if the worm falls for 10 loops it dies
             int fallLoopCount = 0;
+
+            wormMoveDirection dir = wormMoveDirection.down;
 
             while (true)
             {
+                // reset the console cursor 
+                // makes the console draw from top left
                 Console.SetCursorPosition(0, 0);
 
+                level.ApplyGravity();
 
-                List<Point> colPoints = new List<Point> { };
-                colPoints.AddRange(map);
-                colPoints.AddRange(apples);
-                colPoints.AddRange(rocks);
-                colPoints.Add(end);
-
-                fallLoopCount = 0;
-                while (IsFalling(worm, colPoints))
+                if (level.WormAlive)
                 {
-                    for (int i = 0; i < worm.Count; i++)
-                    {
-                        worm[i] = new Point(worm[i].X, worm[i].Y + 1);
-                    }
-
-                    wormHead.Y++;
-                    fallLoopCount++;
-
-                    if (fallLoopCount >= fallTilDeath)
-                    {
-                        isDead = true;
-                        break;
-                    }
+                    level.WormInSpikes();
                 }
 
-                colPoints.AddRange(worm);
-                fallLoopCount = 0;
-                int[] fallingRocks = GetFallingRocksIndex(rocks, colPoints);
-                while(fallingRocks.Length != 0)
+                for (int y = 0; y < level.Height; y++)
                 {
-                    foreach (int i in fallingRocks)
+                    for (int x = 0; x < level.Width; x++)
                     {
-                        rocks[i] = new Point(rocks[i].X, rocks[i].Y + 1);
-                    }
-                    
-                    fallLoopCount++;
-
-                    if (fallLoopCount >= fallTilDeath)
-                    {
-                        foreach (int i in fallingRocks)
+                        if (level.Map.Any(_ => _ == new Point(x, y)))
                         {
-                            rocks.RemoveAt(i);
-                        }
-                        break;
-                    }
-                    fallingRocks = GetFallingRocksIndex(rocks, Helpers.CombineList(colPoints, rocks));
-                }
-
-                
-
-                if (InSpikes(worm, spikes))
-                {
-                    isDead = true;
-                }
-
-                for (int y = 0; y < mapSize.Height; y++)
-                {
-                    for (int x = 0; x < mapSize.Width; x++)
-                    {
-                        if(map.Contains(new Point(x, y)))
-                        {
-                            //Helpers.WriteAsConsoleColor("[]", ConsoleColor.DarkYellow);
                             Console.Write("[]");
                             continue;
                         }
 
-                        if(rocks.Contains(new Point(x, y)))
+                        if (level.Rocks.Any(_ => _ == new Point(x, y)))
                         {
                             Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkGray);
                             continue;
                         }
 
-                        if(spikes.Contains(new Point(x, y)))
+                        if (level.Spikes.Any(_ => _ == new Point(x, y)))
                         {
                             Console.Write("XX");
                             continue;
                         }
 
-                        if(end.X == x && end.Y == y)
+                        if (level.WinningPortal.X == x && level.WinningPortal.Y == y)
                         {
                             Helpers.WriteAsConsoleColor("  ", ConsoleColor.White);
                             continue;
                         }
 
-                        if(apples.Contains(new Point(x, y)))
+                        if (level.Apples.Any(_ => _ == new Point(x, y)))
                         {
                             Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkRed);
                             continue;
                         }
 
-                        if (worm.Contains(new Point(x, y)))
+                        if (level.Worm.Any(_ => _ == new Point(x, y)))
                         {
-                            if (wormHead.X == x && wormHead.Y == y)
+                            if (level.WormHead.X == x && level.WormHead.Y == y)
                             {
                                 Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkMagenta);
                                 continue;
@@ -223,210 +109,276 @@ namespace cliAppleWorm
                     Console.Write("\n");
                 }
 
-                if (isDead) break;
+                Console.Write(new string(' ', level.Width));
+                Console.WriteLine(level.Name.PadRight(level.Width*2, ' '));
+
+                if (!level.WormAlive || level.WormInSpikes())
+                {
+                    Console.Write(new string(' ', level.Width));
+                    Console.WriteLine("YOU DIED".PadRight(level.Width*2, ' '));
+                    Console.ReadKey();
+                    return LevelCompletionResult.lose;
+                }   
 
                 ConsoleKeyInfo k = Console.ReadKey(intercept: true);
 
                 switch (k.Key)
                 {
                     case ConsoleKey.RightArrow:
-                        newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
-                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
+                        newHeadPos = new Point(level.WormHead.X + 1, level.WormHead.Y);
+                        if (level.InvalidWormMove(newHeadPos))
                             break;
 
-                        wormHead.X++;
+                        level.WormHead.X++;
                         wormMoved = true;
                         dir = wormMoveDirection.right;
                         break;
+
                     case ConsoleKey.LeftArrow:
-                        newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
-                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
+                        newHeadPos = new Point(level.WormHead.X - 1, level.WormHead.Y);
+                        if (level.InvalidWormMove(newHeadPos))
                             break;
 
-                        wormHead.X--;
+                        level.WormHead.X--;
                         wormMoved = true;
                         dir = wormMoveDirection.left;
                         break;
                     case ConsoleKey.DownArrow:
-                        newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
-                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
+                        newHeadPos = new Point(level.WormHead.X, level.WormHead.Y + 1);
+                        if (level.InvalidWormMove(newHeadPos))
                             break;
 
-                        wormHead.Y++;
+                        level.WormHead.Y++;
                         wormMoved = true;
                         dir = wormMoveDirection.down;
                         break;
                     case ConsoleKey.UpArrow:
-                        newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
-                        if (map.Contains(newHeadPos) || worm.Contains(newHeadPos))
-                            break;
+                        newHeadPos = new Point(level.WormHead.X, level.WormHead.Y - 1);
+                        if (level.InvalidWormMove(newHeadPos))
+                                break;
 
-                        wormHead.Y--;
+                        level.WormHead.Y--;
                         wormMoved = true;
                         dir = wormMoveDirection.up;
                         break;
+
                     case ConsoleKey.R:
-                        goto Restart;
+                        Console.Write(new string(' ', level.Width));
+                        Console.WriteLine("Restarting...".PadRight(level.Width*2, ' '));
+                        return LevelCompletionResult.restart;
+
                     case ConsoleKey.Escape:
-                        goto Start;
+                        return LevelCompletionResult.cancel;
                 }
 
-                if (rocks.Contains(wormHead))
+                if (level.Rocks.Any(_ => _ == level.WormHead))
                 {
-                    int index = rocks.IndexOf(wormHead);
+                    int index = level.Rocks.IndexOf(level.WormHead);
                     switch (dir)
                     {
                         case wormMoveDirection.up:
-                            newHeadPos = new Point(wormHead.X, wormHead.Y - 1);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
+                            newHeadPos.Y--;
+                            if (level.ValidRockMove(newHeadPos))
                             {
-                                wormHead.Y++;
+                                level.WormHead.Y++;
                                 wormMoved = false;
                                 break;
                             }
-                            rocks[index] = new Point(rocks[index].X, rocks[index].Y - 1);
+                            level.Rocks[index] = new Point(level.Rocks[index].X, level.Rocks[index].Y - 1);
                             break;
+
                         case wormMoveDirection.down:
-                            newHeadPos = new Point(wormHead.X, wormHead.Y + 1);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
+                            newHeadPos.Y++;
+                            if (level.ValidRockMove(newHeadPos))
                             {
-                                wormHead.Y--;
+                                level.WormHead.Y--;
                                 wormMoved = false;
                                 break;
                             }
-                            rocks[index] = new Point(rocks[index].X, rocks[index].Y + 1);
+                            level.Rocks[index] = new Point(level.Rocks[index].X, level.Rocks[index].Y + 1);
                             break;
+
                         case wormMoveDirection.left:
-                            newHeadPos = new Point(wormHead.X - 1, wormHead.Y);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
+                            newHeadPos.X--;
+                            if (level.ValidRockMove(newHeadPos))
                             {
-                                wormHead.X++;
+                                level.WormHead.X++;
                                 wormMoved = false;
                                 break;
                             }
-                            rocks[index] = new Point(rocks[index].X - 1, rocks[index].Y);
+                            level.Rocks[index] = new Point(level.Rocks[index].X - 1, level.Rocks[index].Y);
                             break;
+
                         case wormMoveDirection.right:
-                            newHeadPos = new Point(wormHead.X + 1, wormHead.Y);
-                            if (map.Contains(newHeadPos) || worm.Contains(newHeadPos) || rocks.Contains(newHeadPos) || apples.Contains(newHeadPos))
+                            newHeadPos.X++;
+                            if (level.ValidRockMove(newHeadPos))
                             {
-                                wormHead.X--;
+                                level.WormHead.X--;
                                 wormMoved = false;
                                 break;
                             }
-                            rocks[index] = new Point(rocks[index].X + 1, rocks[index].Y);
+                            level.Rocks[index] = new Point(level.Rocks[index].X + 1, level.Rocks[index].Y);
                             break;
                     }
                 }
-                
 
                 if (wormMoved)
                 {
                     wormMoved = false;
-                    worm.Add(wormHead);
+                    level.Worm.Add(level.WormHead);
 
-                    if (wormHead == end)
+                    if (level.WormHead == level.WinningPortal)
                     {
                         // put green over the purple head to make it look like
                         // its head went into the white end point
-                        Console.SetCursorPosition(worm[worm.Count - 2].X * 2, worm[worm.Count - 2].Y);
+                        Console.SetCursorPosition(level.Worm[level.Worm.Count - 2].X * 2, level.Worm[level.Worm.Count - 2].Y);
                         Helpers.WriteAsConsoleColor("  ", ConsoleColor.DarkGreen);
 
                         // go through and replace the green with nothing
                         // to make it look like its entering 
-                        for (int i = 0; i < worm.Count - 1; i++)
+                        for (int i = 0; i < level.Worm.Count - 1; i++)
                         {
-                            try
-                            {
-                                Console.SetCursorPosition(worm[i].X * 2, worm[i].Y);
-                                Console.WriteLine("  ");
-                                Thread.Sleep(1000 / worm.Count);
-                            }
-                            catch { }
+                            if (level.Worm[i].X * 2 < 0 || level.Worm[i].Y < 0)
+                               continue;
+                            
+                            Console.SetCursorPosition(level.Worm[i].X * 2, level.Worm[i].Y);
+                            Console.WriteLine("  ");
+                            Thread.Sleep(1000 / level.Worm.Count);
                         }
-                        Console.SetCursorPosition(0, mapSize.Height - 2);
-                        Console.WriteLine("level complete");
-                        goto Start;
+                        Console.SetCursorPosition(0, level.Height+1);
+                        Console.Write(new string(' ', (level.Width / 2) - level.Name.Length));
+                        Console.WriteLine("Level Complete!".PadRight(level.Width, ' '));
+                        return LevelCompletionResult.win;
                     }
 
-                    if (apples.Count != 0)
+                    if (level.Apples.Count != 0)
                     {
-                        if (apples.Contains(wormHead))
-                            apples.Remove(wormHead);
-                        else
-                            worm.RemoveAt(0);
+                        if(!level.Apples.Remove(level.Apples.Find(_ => _ == level.WormHead)))
+                        {
+                            level.Worm.RemoveAt(0);
+                        }
                     }
                     else
                     {
-                        worm.RemoveAt(0);
+                        level.Worm.RemoveAt(0);
                     }
                 }
-                
 
                 Helpers.ClearConsoleInputBuffer();
             }
-
-            Console.WriteLine("you died");
-            Console.ReadKey();
-            goto Restart;
         }
 
-        private static int[] GetFallingRocksIndex(List<Point> rocks, List<Point> colision)
+        public static string AskGetLevel()
         {
-            List<int> fallingRocks = new List<int> { };
-            for (int i = 0; i <= rocks.Count - 1; i++) 
+            string file;
+            do
             {
-                if (!colision.Contains(new Point(rocks[i].X, rocks[i].Y + 1)))
+                Console.WriteLine("input level name '|auto|' to do 0->X");
+                file = Console.ReadLine();
+
+                if (file == "|auto|")
                 {
-                    fallingRocks.Add(i);
-                    colision.Remove(rocks[i]);
+                    return "|auto|";
                 }
-                if(!colision.Contains(new Point(rocks[i].X, rocks[i].Y - 1)))
-                {
-                    colision.Remove(rocks[i]);
-                }
+
+                file = Directory.GetCurrentDirectory() + "\\levels\\" + file + ".awlf";
             }
-            return fallingRocks.ToArray();
+            while (!File.Exists(file));
+
+            return file;
         }
 
-        private static bool InSpikes(List<Point> worm, List<Point> spikes)
+        public static List<string> levels = new List<string>();
+        public static int levelIndex = 0;
+        public const string levelDir = "\\levels\\";
+
+        public static AppleWormLevel LoadLevel(string path, bool autolevel)
         {
-            foreach(Point p in worm)
-                if (spikes.Contains(p))
-                    return true;
-
-            return false;
-        }
-
-        private static bool IsFalling(List<Point> worm, List<Point> colision)
-        {
-            foreach (Point p in worm)
-                // if any part of the worm is touching the ground
-                // we know its not falling
-                if (colision.Contains(new Point(p.X, p.Y + 1)))
-                    return false;
-
-            return true;
-        }
-
-        private static string[] GetLevelData(string path)
-        {
-            if (!File.Exists(path)) return null;
-
-            List<string> lines = new List<string> { };
-
-            using (var fileStream = File.OpenRead(path))
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 128))
+            AppleWormLevel level;
+            if (autolevel)
             {
-                String line;
-
-                while ((line = streamReader.ReadLine()) != null)
+                levels.Clear();
+                foreach (string i in Directory.EnumerateFiles(Directory.GetCurrentDirectory() + levelDir).OrderByNatural(e => e))
                 {
-                    lines.Add(line.Substring(0, line.IndexOf(';') != -1 ? line.IndexOf(';') : line.Length).Trim()); 
+                    levels.Add(i);
                 }
+
+                do
+                {
+                    if(levelIndex >= levels.Count)
+                    {
+                        Console.WriteLine("No more levels");
+                        return null;
+                    }
+
+                    level = new AppleWormLevel(levels[levelIndex], true);
+                    levelIndex++;
+                }
+                while (!level.IsValidLevel);
+
+                return level;
             }
 
-            return lines.ToArray();
+            level = new AppleWormLevel(path, true);
+
+            if (!level.IsValidLevel)
+            {
+                return LoadLevel(AskGetLevel(), autolevel);
+            }
+            return level;
+        }
+
+        static void Main()
+        {
+            bool autoLevel = false;
+            string level;
+            while (true)
+            {
+            // i know i know, but goto is chad in this case
+            start:
+
+                level = "";
+                if (!autoLevel)
+                {
+                    level = AskGetLevel();
+
+                    if (level == "|auto|")
+                    {
+                        levelIndex = 0;
+                        autoLevel = true;
+                    }
+                    Console.Clear();
+                }
+
+                AppleWormLevel l = LoadLevel(level, autoLevel);
+
+                if(l == null)
+                {
+                    autoLevel = false;
+                    continue;
+                }
+
+                while (true)
+                {    
+                    LevelCompletionResult result = PlayLevel(l);
+
+                    switch (result)
+                    {
+                        case LevelCompletionResult.cancel:
+                            autoLevel = false;
+                            goto start;
+
+                        case LevelCompletionResult.restart:
+                            continue;
+
+                        case LevelCompletionResult.win:
+                            goto start;
+
+                        case LevelCompletionResult.lose:
+                            continue;
+                    }
+                }
+            }
         }
     }
 }

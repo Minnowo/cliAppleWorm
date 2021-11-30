@@ -5,3 +5,10 @@ X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.csproj.CoreCompile
 X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.exe
 X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.pdb
 X:\Languages\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.csprojAssemblyReference.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWorm.exe.config
+D:\Programming\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWorm.exe
+D:\Programming\C#\TEST_DATA\cliAppleWorm\bin\Debug\cliAppleWorm.pdb
+D:\Programming\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.csproj.AssemblyReference.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.csproj.CoreCompileInputs.cache
+D:\Programming\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.exe
+D:\Programming\C#\TEST_DATA\cliAppleWorm\obj\Debug\cliAppleWorm.pdb
