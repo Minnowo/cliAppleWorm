@@ -1,0 +1,7 @@
+0 6|1 6|2 6  	; worm data
+5 5		; apple data
+11 8		; winning point data
+		; spike data
+0 7|1 7|2 7|3 7|4 7|8 7|9 7|10 7|11 7|7 5|7 3|6 3|3 3|3 4|3 5 	; level block data
+ ;rockdata
+15 10
