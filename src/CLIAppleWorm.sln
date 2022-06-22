@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cliAppleWorm", "cliAppleWorm.csproj", "{3D787C57-7480-4F5E-9B22-6A803482A15C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cliAppleWorm", "Game\CLIAppleWorm.csproj", "{3D787C57-7480-4F5E-9B22-6A803482A15C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cliAppleWormMapDesigner", "cliAppleWormMapDesigner\cliAppleWormMapDesigner.csproj", "{F864C5D3-F61C-4549-A928-2783D3C0E94D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cliAppleWormMapDesigner", "MapDesigner\MapDesigner.csproj", "{F864C5D3-F61C-4549-A928-2783D3C0E94D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
